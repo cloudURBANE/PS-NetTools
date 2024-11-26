@@ -4,10 +4,10 @@
 .SYNOPSIS
     A PowerShell script to remotely configure Windows Defender while maintaining security and transparency.
 .DESCRIPTION
-    PS-NetTools provides a secure method to remotely configure Windows Defender settings, including enabling real-time protection, setting exclusions, and scheduling scans.
+    PS-NetTools provides a secure method to remotely configure Windows Defender settings, including enabling real-time protection, setting exclusions, scheduling scans, and additional security features.
     This script is designed with user experience and security in mind, ensuring clear actions, transparency, and minimal risk of abuse or misuse.
 .NOTES
-    Version: 1.4
+    Version: 1.5
     Author: [Kyle A Dean]
     Date: [11/26/2024]
     License: MIT
@@ -130,7 +130,52 @@ try {
     exit 1
 }
 
-# Step 8: Disable PowerShell Remoting (Optional)
+# Step 8: Disable SMBv1 for Security
+try {
+    Disable-WindowsOptionalFeature -Online -FeatureName "SMB1Protocol" -NoRestart -ErrorAction Stop
+    Log-Action "SMBv1 protocol disabled for added security."
+} catch {
+    Log-Action "Failed to disable SMBv1: $_"
+}
+
+# Step 9: Ensure Windows Firewall is Enabled
+try {
+    Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True -ErrorAction Stop
+    Log-Action "Windows Firewall enabled for all profiles."
+} catch {
+    Log-Action "Failed to enable Windows Firewall: $_"
+}
+
+# Step 10: Verify Remote Desktop Settings
+try {
+    $rdpStatus = (Get-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections").fDenyTSConnections
+    if ($rdpStatus -eq 1) {
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0 -ErrorAction Stop
+        Log-Action "Remote Desktop enabled."
+    } else {
+        Log-Action "Remote Desktop is already enabled."
+    }
+} catch {
+    Log-Action "Failed to verify or enable Remote Desktop: $_"
+}
+
+# Step 11: Configure Windows Defender Scan Preferences
+try {
+    Set-MpPreference -ScanAvgCPULoadFactor 30 -ErrorAction Stop
+    Log-Action "Windows Defender CPU load factor set to 30% to optimize system performance during scans."
+} catch {
+    Log-Action "Failed to configure Windows Defender scan preferences: $_"
+}
+
+# Step 12: Restrict PowerShell Execution Policy to RemoteSigned
+try {
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force -ErrorAction Stop
+    Log-Action "PowerShell execution policy set to RemoteSigned for security."
+} catch {
+    Log-Action "Failed to set PowerShell execution policy: $_"
+}
+
+# Step 13: Disable PowerShell Remoting (Optional)
 try {
     Disable-PSRemoting -Force -ErrorAction Stop
     Log-Action "PowerShell Remoting disabled for added security."
