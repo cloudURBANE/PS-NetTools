@@ -22,49 +22,49 @@ Ensure you have administrative privileges on both your machine and the remote ma
 ```powershell
 Enable-PSRemoting -Force
 ```
-> Screenshot: Capture PowerShell running this command.
+> 
 
 ### **Step 2: Verify Defender Status**
 Use PowerShell to verify if Windows Defender is running on the remote system. Run:
 ```powershell
 Get-MpComputerStatus
 ```
-> Screenshot: Capture the output showing the current status of Windows Defender.
+> 
 
 ### **Step 3: Configure Real-Time Protection**
 Enable or disable real-time protection on the remote system using the following command:
 ```powershell
 Set-MpPreference -DisableRealtimeMonitoring $false
 ```
-> Screenshot: Capture the confirmation output after changing real-time protection settings.
+> 
 
 ### **Step 4: Set Exclusions**
 Add specific folder or file exclusions to reduce unnecessary scans and improve system performance. For example:
 ```powershell
 Set-MpPreference -ExclusionPath "C:\Temp"
 ```
-> Screenshot: Capture the added exclusion path.
+> 
 
 ### **Step 5: Update Defender Virus Definitions**
 Make sure Windows Defender is using the latest definitions:
 ```powershell
 Update-MpSignature
 ```
-> Screenshot: Capture the success message after updating virus definitions.
+> 
 
 ### **Step 6: Schedule Scans**
 Schedule a daily quick scan using Task Scheduler via PowerShell. Use the command below to automate scans:
 ```powershell
 schtasks /create /tn "DailyQuickScan" /tr "powershell.exe -command Start-MpScan -ScanType QuickScan" /sc daily /st 09:00
 ```
-> Screenshot: Capture Task Scheduler confirming the newly created task.
+> 
 
 ### **Step 7: Disable PowerShell Remoting (Optional)**
 For added security, disable PowerShell Remoting if it is no longer needed:
 ```powershell
 Disable-PSRemoting -Force
 ```
-> Screenshot: Capture the terminal showing that remoting has been disabled.
+> 
 
 ---
 
@@ -88,5 +88,5 @@ PS-NetTools provides a PowerShell script that can be run to automatically apply 
 
 ## **Contact**
 For questions or collaboration, feel free to reach out:
-- **GitHub**: [Your Name](https://github.com/your-username)
-- **LinkedIn**: [Your LinkedIn Profile](https://linkedin.com/in/your-linkedin)
+- **GitHub**: [Kyle A Dean](https://github.com/cloudURBANE)
+- **LinkedIn**: [My LinkedIn Profile](https://www.linkedin.com/in/kyleaustin-dean/)
