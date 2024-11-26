@@ -7,7 +7,7 @@
     PS-NetTools provides a secure method to remotely configure Windows Defender settings, including enabling real-time protection, setting exclusions, and scheduling scans.
     This script is designed with user experience and security in mind, ensuring clear actions, transparency, and minimal risk of abuse or misuse.
 .NOTES
-    Version: 1.3
+    Version: 1.4
     Author: [Kyle A Dean]
     Date: [11/26/2024]
     License: MIT
@@ -57,6 +57,9 @@ try {
 # Step 2: Verify Windows Defender Status
 try {
     $defenderStatus = Get-MpComputerStatus -ErrorAction Stop
+    if ($defenderStatus -eq $null) {
+        throw "Windows Defender is not running on this system."
+    }
     Log-Action "Windows Defender Status Retrieved:"
     Log-Action ($defenderStatus | Out-String)
 } catch {
@@ -100,6 +103,10 @@ try {
 $taskName = "DailyQuickScan"
 $taskTime = "09:00"
 try {
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction Stop
+        Log-Action "Existing scheduled task '$taskName' found and removed."
+    }
     $taskAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-command Start-MpScan -ScanType QuickScan"
     $taskTrigger = New-ScheduledTaskTrigger -Daily -At $taskTime
     Register-ScheduledTask -TaskName $taskName -Action $taskAction -Trigger $taskTrigger -User "System" -ErrorAction Stop
@@ -112,6 +119,10 @@ try {
 # Step 7: Implement Firewall Rule for PowerShell Remoting Security
 $firewallRuleName = "PS-NetTools-PowerShellRemoting"
 try {
+    if (Get-NetFirewallRule -DisplayName $firewallRuleName -ErrorAction SilentlyContinue) {
+        Remove-NetFirewallRule -DisplayName $firewallRuleName -ErrorAction Stop
+        Log-Action "Existing firewall rule '$firewallRuleName' found and removed."
+    }
     New-NetFirewallRule -DisplayName $firewallRuleName -Direction Inbound -Protocol TCP -LocalPort 5985 -Action Allow -Profile Domain,Private -ErrorAction Stop
     Log-Action "Firewall rule '$firewallRuleName' created to secure PowerShell Remoting."
 } catch {
